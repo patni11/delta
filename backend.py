@@ -9,6 +9,7 @@ import numpy as np
 import pyautogui
 import threading
 from datetime import datetime
+import subprocess
 
 api_key = os.environ.get('gemini_key')
 genai.configure(api_key=api_key)
@@ -63,6 +64,26 @@ def stop_recording():
         return jsonify({"message": "Screen recording stopped"}), 200
     else:
         return jsonify({"message": "No recording in progress"}), 400
+
+def take_screenshot():
+    screenshots_dir = 'screenshots'
+    os.makedirs(screenshots_dir, exist_ok=True)
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f"{screenshots_dir}/screenshot_{timestamp}.png"
+    
+    try:
+        subprocess.run(['screencapture', '-x', filename], check=True)
+        return filename
+    except subprocess.CalledProcessError:
+        return None
+
+@app.route('/take_screenshot', methods=['POST'])
+def screenshot_endpoint():
+    screenshot_path = take_screenshot()
+    if screenshot_path:
+        return jsonify({"message": "Screenshot taken successfully", "path": screenshot_path}), 200
+    else:
+        return jsonify({"message": "Failed to take screenshot"}), 500
 
 def main():
     app.run(debug=False)  # Set debug to False for production use
