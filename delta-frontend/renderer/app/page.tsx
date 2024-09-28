@@ -2,7 +2,7 @@ import React from 'react';
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import Navbar from '@/components/Navbar/navbar';
-
+import Link from 'next/link'
 import { ArrowBigRight } from 'lucide-react';
 import ProjectCards from '@/components/Home/pastTasks';
 import TaskSuggestions from '@/components/Home/suggestedTasks';
@@ -22,7 +22,9 @@ export default function IndexPage() {
             placeholder="What task do you want to work on?"
           />
           <Button className="ml-2 bg-purple-600 hover:bg-purple-500">
+            <Link href={"http://localhost:8888/task/d79b8ad125be7a54102b32395937d2df/"}>
             <ArrowBigRight className='w-5 h-5'/>
+            </Link>
           </Button>
         </div>
 
