@@ -4,6 +4,11 @@ import requests
 import json
 import google.generativeai as genai
 import time
+import cv2
+import numpy as np
+import pyautogui
+import threading
+from datetime import datetime
 
 api_key = os.environ.get('gemini_key')
 genai.configure(api_key=api_key)
@@ -11,62 +16,56 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 
 app = Flask(__name__)
 
-def get_feedbackprompt(task):
-    prompt = f"""The user is doing the following task: {task}. If they are doing the task and not another task, say well done and give any helpful advice if they are stuck. If they
-    are not doing the task, gently prompt them to go back to the relevant application window and do the task."""
-    return prompt
+# Global variables to keep track of recording state
+is_recording = False
+recording_thread = None
 
-def get_taskbreakdown(task):
-    prompt = f"""The user wants to do the following task: {task}. 
-Break down the tasks into multiple, actionable steps to make the task easier to work on step by step. Give an estimate of the time needed to take to do each task"""
-    return prompt
+# ... (previous functions remain unchanged)
 
-@app.route('/video', methods=['POST'])
-def set_video():
-    video_file = request.files.get('video')  # Get the uploaded video file
-    if video_file:
-        filename = video_file.filename  # Get the filename from the video file
-        os.makedirs('videos', exist_ok=True)  # Create the 'videos' directory if it doesn't exist
-        video_file.save(os.path.join('videos', filename))  # Save the video to the 'videos' directory
-        return jsonify({"message": "Video uploaded successfully!"}), 201
-    else:
-        return jsonify({"error": "No video file provided"}), 400
-
-@app.route('/tasks', methods=['POST'])
-def get_tasks():
-    task = request.form.get('task')
-    if task:
-        response = model.generate_content(get_taskbreakdown(task))
-        return jsonify(response.text)
-    else:
-        return jsonify({"error": "No task provided"}), 400
-
-@app.route('/feedback', methods=['POST'])
-def get_feedback():
-    task = request.form.get('task')
-    video = request.files.get('video')
+def screen_recorder():
+    global is_recording
+    os.makedirs('recordings', exist_ok=True)
+    filename = f"recordings/screen_recording_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
     
-    if task and video:
-        filename = video.filename
-        os.makedirs('videos', exist_ok=True)  
-        video.save(os.path.join('videos', filename)) 
-        video_file = genai.upload_file(path="videos/" + filename)
-        while video_file.state.name == "PROCESSING":
-            print('.', end='')
-            time.sleep(10)
-            video_file = genai.get_file(video_file.name)
+    # Get the screen size
+    screen_size = pyautogui.size()
+    
+    # Use a different codec that's more compatible with macOS
+    fourcc = cv2.VideoWriter_fourcc(*'avc1')
+    out = cv2.VideoWriter(filename, fourcc, 10.0, screen_size)
 
-        if video_file.state.name == "FAILED":
-            return jsonify({"error": "Gemini video file upload"}), 400
-                
-        response = model.generate_content([video_file, get_feedbackprompt(task)],
-                                          request_options={"timeout": 600})
-        return jsonify(response.text)
+    while is_recording:
+        # Capture the screen
+        img = pyautogui.screenshot()
+        frame = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+        out.write(frame)
+        time.sleep(0.1)  # Add a small delay to reduce CPU usage
+
+    out.release()
+
+@app.route('/start_recording', methods=['POST'])
+def start_recording():
+    global is_recording, recording_thread
+    if not is_recording:
+        is_recording = True
+        recording_thread = threading.Thread(target=screen_recorder)
+        recording_thread.start()
+        return jsonify({"message": "Screen recording started"}), 200
     else:
-        return jsonify({"error": "Task or video file missing"}), 400
+        return jsonify({"message": "Recording is already in progress"}), 400
+
+@app.route('/stop_recording', methods=['POST'])
+def stop_recording():
+    global is_recording, recording_thread
+    if is_recording:
+        is_recording = False
+        recording_thread.join()
+        return jsonify({"message": "Screen recording stopped"}), 200
+    else:
+        return jsonify({"message": "No recording in progress"}), 400
 
 def main():
-    app.run(debug=True)
+    app.run(debug=False)  # Set debug to False for production use
 
 if __name__ == '__main__':
     main()
