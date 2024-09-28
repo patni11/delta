@@ -1,5 +1,4 @@
-"use client"
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 
 const allSuggestions = [
@@ -16,20 +15,23 @@ const allSuggestions = [
 ];
 
 export default function TaskSuggestions() {
-  const [displayedSuggestions, setDisplayedSuggestions] = useState(() => {
+
+  function getSuggestions(){
     const shuffled = [...allSuggestions].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, 3);
-  });
+  }
+
+  const displayedSuggestions = getSuggestions()
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div className="flex space-x-4 mb-8 justify-center">
       {displayedSuggestions.map((task, index) => (
         <Button 
   key={index} 
   variant="outline" 
-  className="justify-start text-left h-auto py-2 px-4 bg-gray-800 hover:bg-gray-700 border-gray-700 text-sm"
+  className="justify-start text-left h-auto py-2 px-4 bg-gray-800 hover:bg-gray-700 hover:text-purple-300 border-gray-700 text-sm"
 >
-  <span className="line-clamp-2">{task}</span>
+  {task}
 </Button>
       ))}
     </div>

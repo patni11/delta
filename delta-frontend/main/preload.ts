@@ -15,6 +15,15 @@ const handler = {
   }
 }
 
+contextBridge.exposeInMainWorld('electronAPI', {
+  startScreenCapture: () => ipcRenderer.invoke('start-screen-capture'),
+  stopScreenCapture: () => ipcRenderer.invoke('stop-screen-capture'),
+  onCaptureStatus: (callback) => ipcRenderer.on('capture-status', callback),
+  onCaptureError: (callback) => ipcRenderer.on('capture-error', callback),
+  //enableScreenCapture: () => ipcRenderer.invoke('enable-screen-capture'),
+  //disableScreenCapture: () => ipcRenderer.invoke('disable-screen-capture'),
+});
+
 contextBridge.exposeInMainWorld('ipc', handler)
 
 export type IpcHandler = typeof handler
