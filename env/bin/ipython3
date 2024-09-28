@@ -1,4 +1,4 @@
-#!/Users/aaryan/Desktop/delta/env/bin/python
+#!/Users/aaryan/Desktop/delta/env/bin/python3.11
 # -*- coding: utf-8 -*-
 import re
 import sys
