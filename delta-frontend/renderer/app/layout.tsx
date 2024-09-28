@@ -1,7 +1,7 @@
 import React from 'react'
 import '@/styles/globals.css'
 import { Inter as FontSans } from 'next/font/google'
-
+import { Providers } from "../components/Chat/Providers";
 import { cn } from '@/lib/utils'
 import { Metadata } from 'next'
 import ThemeProvider from '@/components/providers/theme-provider'
@@ -12,8 +12,8 @@ const fontSans = FontSans({
 })
 
 export const metadata: Metadata = {
-  title: 'Nextron Boilerplate',
-  description: 'Nextron ( Next.Js + Electron ) project boilerplate in TypeScript, with TailwindCSS + Shadcn/ui, web and desktop crossbuild'
+  title: 'Delta Focus App',
+  description: 'App that pays you to stay focused'
 }
 
 export default function RootLayout({
@@ -28,6 +28,8 @@ export default function RootLayout({
           'min-h-screen bg-background font-sans antialiased',
           fontSans.variable
         )}>
+                  <Providers>
+                  
           <ThemeProvider
             attribute='class'
             defaultTheme='system'
@@ -36,6 +38,7 @@ export default function RootLayout({
           >
             {children}
           </ThemeProvider>
+          </Providers>
       </body>
     </html>
   )

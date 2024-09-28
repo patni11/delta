@@ -27,7 +27,7 @@ export default function TaskSuggestions() {
         <Button 
   key={index} 
   variant="outline" 
-  className="justify-start text-left h-auto py-2 px-3 bg-gray-800 hover:bg-gray-700 border-gray-700 text-sm"
+  className="justify-start text-left h-auto py-2 px-4 bg-gray-800 hover:bg-gray-700 border-gray-700 text-sm"
 >
   <span className="line-clamp-2">{task}</span>
 </Button>
